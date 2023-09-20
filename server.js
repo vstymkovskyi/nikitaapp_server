@@ -21,9 +21,6 @@ async function downloadImage(url, accessToken, filename) {
     },
   });
 
-  // const image = response;
-  console.log(response);
-
   fs.writeFile(filename, response.data, (err) => {
     if (err) {
       console.error(err);
@@ -43,6 +40,7 @@ function createImagesFolder() {
 
 app.use(express.json());
 app.use(cors());
+app.use('/images', express.static('images'));
 
 app.post('/api/getToken', async (req, res) => {
   try {
@@ -105,10 +103,12 @@ app.post('/api/getProduct', async (req, res) => {
           fs.mkdirSync(imageDir);
         }
         imagePath = path.join(imageDir, imageObj.filename);
-
-        await downloadImage(downloadImageUrl, accessToken, imagePath);
+        if (!fs.existsSync(imagePath)) {
+          await downloadImage(downloadImageUrl, accessToken, imagePath);
+        }
       }
     }
+
     const product = {
       id: productData.data.id,
       name: productData.data.name,
